@@ -18,8 +18,6 @@ exports.getApiHome = function(accessToken, callback) {
   Prismic.Api(configuration.apiEndpoint, callback, accessToken);
 };
 
-exports.previewCookie = Prismic.previewCookie;
-
 function prismicWithCTX(ctxPromise, req, res) {
   var self = {
 
@@ -106,4 +104,19 @@ exports.withContext = function(req, res, callback) {
     return prismicWithCTX(ctxPromise, req, res);
   }
 };
+
+exports.preview = function(req, res) {
+  prismic.withContext(req,res, function then(ctx) {
+    var token = req.query['token'];
+    if (token) {
+      ctx.api.previewSession(token, ctx.linkResolver, '/', function(err, url) {
+        res.cookie(Prismic.previewCookie, token, { maxAge: 30 * 60 * 1000, path: '/', httpOnly: false });
+        res.redirect(301, url);
+      });
+    } else {
+      res.send(400, "Missing token from querystring");
+    }
+  });
+};
+
 
