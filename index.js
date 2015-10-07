@@ -76,26 +76,28 @@ function prismicWithCTX(ctxPromise, req, res) {
 exports.withContext = function(req, res, callback) {
   var accessToken = (req.session && req.session['ACCESS_TOKEN']) || configuration.accessToken;
   var ctxPromise = new Promise(function (fulfill) {
-
-    exports.getApiHome(accessToken, function(err, Api) {
-      if (!configuration.linkResolver) {
-        throw new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script");
-      }
-      if (err) {
-          exports.onPrismicError(err, req, res);
-          return;
-      }
-      var ctx = {
-        endpoint: configuration.apiEndpoint,
-        api: Api,
-        ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
-        linkResolver: function(doc) {
-          return configuration.linkResolver(doc);
+    try {
+      exports.getApiHome(accessToken, function(err, Api) {
+        if (!configuration.linkResolver) {
+          throw new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script");
         }
-      };
-      fulfill(ctx);
-    });
-
+        if (err) {
+          configuration.onPrismicError && configuration.onPrismicError(err, req, res);
+          return;
+        }
+        var ctx = {
+          endpoint: configuration.apiEndpoint,
+          api: Api,
+          ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
+          linkResolver: function(doc) {
+            return configuration.linkResolver(doc);
+          }
+        };
+        fulfill(ctx);
+      });
+    } catch (ex) {
+      return fulfill(ex);
+    }
   });
   if(callback){
     res.locals.ctx = ctx;
