@@ -1,0 +1,19 @@
+{
+  "name": "express-prismic",
+  "description": "Prismic.io support for Prismic.io",
+  "version": "0.0.1",
+  "homepage": "http://github.com/prismicio/express-prismic",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/prismicio/express-prismic.git"
+  },
+  "keywords": [
+    "express", "prismicio", "cms"
+  ],
+  "author": "Prismic.io <info@prismic.io>",
+  "dependencies": {
+    "prismic.io": "1.2.1",
+    "promise": "^7.0.4"
+  },
+  "main": "./index.js"
+}
