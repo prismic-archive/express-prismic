@@ -1,7 +1,8 @@
 {
   "name": "express-prismic",
   "description": "Prismic.io support for Prismic.io",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "license": "Apache-2.0",
   "homepage": "http://github.com/prismicio/express-prismic",
   "repository": {
     "type": "git",
@@ -12,7 +13,7 @@
   ],
   "author": "Prismic.io <info@prismic.io>",
   "dependencies": {
-    "prismic.io": "1.2.1",
+    "prismic.io": "1.3.0",
     "promise": "^7.0.4"
   },
   "main": "./index.js"
