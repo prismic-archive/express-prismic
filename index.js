@@ -7,15 +7,31 @@ var Prismic = require('prismic.io').Prismic,
 
 var configuration = {};
 
+exports.ErrorCodes = {
+  NOT_FOUND: 'NOT_FOUND'
+};
+
+exports.createError = function(status, message) {
+  var err = new Error(message);
+  err.status = status;
+  return err;
+};
+
 exports.init = function(config) {
   configuration = config;
 };
 
 exports.getApiHome = function(accessToken, callback) {
   if (!configuration.apiEndpoint) {
-    throw new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script");
+    callback(new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script"));
   }
-  Prismic.Api(configuration.apiEndpoint, callback, accessToken);
+  Prismic.Api(configuration.apiEndpoint, function(err, res, xhr) {
+    if (err && err.status == "404") {
+      callback(new Error("Invalid apiEndPoint configuration: " + configuration.apiEndpoint));
+    } else {
+      callback(err, res, xhr);
+    }
+  }, accessToken);
 };
 
 function prismicWithCTX(ctxPromise, req, res) {
@@ -28,6 +44,8 @@ function prismicWithCTX(ctxPromise, req, res) {
       ctxPromise.then(function(ctx){
         res.locals.ctx = ctx;
         Prismic.Api(configuration.apiEndpoint, callback, accessToken);
+      }).catch(function(err){
+        callback(err);
       });
     },
     'getByUID' : function(type, uid, callback) {
@@ -37,7 +55,7 @@ function prismicWithCTX(ctxPromise, req, res) {
       ctxPromise.then(function(ctx){
         res.locals.ctx = ctx;
         var id = ctx.api.bookmarks[bookmark];
-        if(id) {
+        if (id) {
           self.getByID(ctx, id, callback);
         } else {
           callback(new Error("Error retrieving boomarked id"));
@@ -67,6 +85,8 @@ function prismicWithCTX(ctxPromise, req, res) {
         ctx.api.forms('everything').ref(ctx.ref).query(q).submit(function(err, response) {
           callback(err, response);
         });
+      }).catch(function(err) {
+        callback(err);
       });
     }
   };
@@ -75,15 +95,14 @@ function prismicWithCTX(ctxPromise, req, res) {
 
 exports.withContext = function(req, res, callback) {
   var accessToken = (req.session && req.session['ACCESS_TOKEN']) || configuration.accessToken;
-  var ctxPromise = new Promise(function (fulfill) {
+  var ctxPromise = new Promise(function (fulfill, reject) {
     try {
       exports.getApiHome(accessToken, function(err, Api) {
         if (!configuration.linkResolver) {
-          throw new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script");
+          reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
         }
         if (err) {
-          configuration.onPrismicError && configuration.onPrismicError(err, req, res);
-          return;
+          reject(err);
         }
         var ctx = {
           endpoint: configuration.apiEndpoint,
@@ -96,7 +115,7 @@ exports.withContext = function(req, res, callback) {
         fulfill(ctx);
       });
     } catch (ex) {
-      return fulfill(ex);
+      return reject(ex);
     }
   });
   if(callback){
