@@ -4,7 +4,7 @@
 
 [![npm version](https://badge.fury.io/js/express-prismic.svg)](http://badge.fury.io/js/express-prismic)
 
-This is a set of helpers to use Prismic.io in an [Express](http://expressjs.com/)) application. If you're starting from scratch, our [NodeJS SDK](https://github.com/prismicio/nodejs-sdk) is a good base.
+This is a set of helpers to use Prismic.io in an [Express](http://expressjs.com/) application. If you're starting from scratch, our [NodeJS SDK](https://github.com/prismicio/nodejs-sdk) is a good base.
 
 ### Configuration
 
