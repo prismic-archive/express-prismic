@@ -7,21 +7,23 @@ var Prismic = require('prismic.io').Prismic,
 
 var configuration = {};
 
-exports.ErrorCodes = {
+exports.Prismic = Prismic;
+
+exports.Prismic.ErrorCodes = {
   NOT_FOUND: 'NOT_FOUND'
 };
 
-exports.createError = function(status, message) {
+exports.Prismic.createError = function(status, message) {
   var err = new Error(message);
   err.status = status;
   return err;
 };
 
-exports.init = function(config) {
+exports.Prismic.init = function(config) {
   configuration = config;
 };
 
-exports.getApiHome = function(accessToken, callback) {
+exports.Prismic.getApiHome = function(accessToken, callback) {
   if (!configuration.apiEndpoint) {
     callback(new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script"));
   }
@@ -93,7 +95,7 @@ function prismicWithCTX(ctxPromise, req, res) {
   return self;
 }
 
-exports.withContext = function(req, res, callback) {
+exports.Prismic.withContext = function(req, res, callback) {
   var accessToken = (req.session && req.session['ACCESS_TOKEN']) || configuration.accessToken;
   var ctxPromise = new Promise(function (fulfill, reject) {
     try {
@@ -126,7 +128,7 @@ exports.withContext = function(req, res, callback) {
   }
 };
 
-exports.preview = function(req, res) {
+exports.Prismic.preview = function(req, res) {
   prismic.withContext(req,res, function then(ctx) {
     var token = req.query['token'];
     if (token) {
