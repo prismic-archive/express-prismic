@@ -10,7 +10,7 @@ This is a set of helpers to use Prismic.io in an [Express](http://expressjs.com/
 
 After including `express-prismic` in your `package.json`, simply import the prismic object:
 
-```
+```javascript
 var prismic = require('express-prismic').Prismic;
 ```
 
@@ -18,7 +18,7 @@ The Prismic object is extended from the [Javascript Kit](https://github.com/pris
 
 It needs to be initialized with your configuration:
 
-```
+```javascript
 prismic.init({
   apiEndPoint: "https://your-repo-name.prismic.io", // Mandatory
   linkResolver: function(doc) { // Mandatory
@@ -32,7 +32,7 @@ prismic.init({
 
 You can then create a Prismic context in your routes if you need to query your repository:
 
-```
+```javascript
 app.route('/').get(function(req, res) {
   var p = prismic.withContext(req,res); // This will retrieve the API object asynchronously (using a promise)
   p.getByUID('page', 'get-started', function (err, document) {
@@ -41,6 +41,18 @@ app.route('/').get(function(req, res) {
     });
   });
 });
+```
+
+Several helper functions are available to query your repository. The most flexible is the `query` function:
+
+```javascript
+  var p = prismic.withContext(req,res); // This will retrieve the API object asynchronously (using a promise)
+  p.query(prismic.Predicate.fulltext('document', term), {
+    page: 2,
+    pageSize: 10
+  }, function (err, results) {
+    [...]
+  });
 ```
 
 ### Previews
