@@ -39,20 +39,11 @@ exports.Prismic.getApiHome = function(accessToken, callback) {
 function prismicWithCTX(ctxPromise, req, res) {
   var self = {
 
-    'getApiHome' : function(accessToken, callback) {
-      if (!configuration.apiEndpoint) {
-        throw new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script");
-      }
-      ctxPromise.then(function(ctx){
-        res.locals.ctx = ctx;
-        Prismic.Api(configuration.apiEndpoint, callback, accessToken);
-      }).catch(function(err){
-        callback(err);
-      });
-    },
+    // Return the document corresponding to the requested UID (User-readable ID)
     'getByUID' : function(type, uid, callback) {
       self.queryFirst(['at','my.'+type+'.uid',uid],callback);
     },
+    // Return a bookmark from its identifier (string)
     'getBookmark' : function(bookmark, callback) {
       ctxPromise.then(function(ctx){
         res.locals.ctx = ctx;
@@ -64,14 +55,17 @@ function prismicWithCTX(ctxPromise, req, res) {
         }
       });
     },
+    // Return a set of document from their ids
     'getByIDs' : function(ids, callback) {
-      self.query(['any', 'document.id', ids], callback);
+      self.query(['any', 'document.id', ids], null, callback);
     },
+    // Return the document corresponding to the requested id
     'getByID' : function(id, callback) {
       self.queryFirst(['at', 'document.id', id], callback);
     },
+    // Return the first document matching the query
     'queryFirst' : function(q, callback) {
-      self.query(q, function(err, response) {
+      self.query(q, null, function(err, response) {
         if(err){
           callback(err, null);
         } else if(response && response.results && response.results[0]) {
@@ -81,10 +75,20 @@ function prismicWithCTX(ctxPromise, req, res) {
         }
       });
     },
-    'query' : function(q, callback){
-      ctxPromise.then(function(ctx){
+    // Return the documents matching the query. The following options are available:
+    // page: number, the page to retrieve, starting at 1, default to 1
+    // pageSize: number, size of a page, default to 20
+    // fetch: restrict the results to some fields, separated by commas
+    // fetchLinks: include additional fields to links, separated by commas
+    'query' : function(q, options, callback) {
+      ctxPromise.then(function(ctx) {
         res.locals.ctx = ctx;
-        ctx.api.forms('everything').ref(ctx.ref).query(q).submit(function(err, response) {
+        var opts = options || {};
+        var form = ctx.api.forms('everything').ref(ctx.ref).query(q);
+        for (var key in opts) {
+          form.set(key, opts[key]);
+        }
+        form.submit(function(err, response) {
           callback(err, response);
         });
       }).catch(function(err) {
@@ -99,7 +103,7 @@ exports.Prismic.withContext = function(req, res, callback) {
   var accessToken = (req.session && req.session['ACCESS_TOKEN']) || configuration.accessToken;
   var ctxPromise = new Promise(function (fulfill, reject) {
     try {
-      exports.getApiHome(accessToken, function(err, Api) {
+      exports.Prismic.getApiHome(accessToken, function(err, Api) {
         if (!configuration.linkResolver) {
           reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
         }
