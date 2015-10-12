@@ -115,7 +115,7 @@ exports.Prismic.withContext = function(req, res, callback) {
           api: Api,
           ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
           linkResolver: function(doc) {
-            return configuration.linkResolver(doc);
+            return configuration.linkResolver(doc, ctx);
           }
         };
         fulfill(ctx);
