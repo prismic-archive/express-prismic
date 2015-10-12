@@ -126,10 +126,12 @@ exports.Prismic.withContext = function(req, res, callback) {
   });
   if(callback){
     ctxPromise.then(function(ctx){
-
       res.locals.ctx = ctx;
-      callback(ctx);
-    }).catch(function(err){ console.log(err) ;});
+      callback(null, ctx);
+    }).catch(function(err){
+      console.log(err) ;
+      callback(err, null);
+    });
   } else {
     return prismicWithCTX(ctxPromise, req, res);
   }
