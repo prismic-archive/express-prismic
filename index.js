@@ -49,7 +49,7 @@ function prismicWithCTX(ctxPromise, req, res) {
         res.locals.ctx = ctx;
         var id = ctx.api.bookmarks[bookmark];
         if (id) {
-          self.getByID(ctx, id, callback);
+          self.getByID(id, callback);
         } else {
           callback(new Error("Error retrieving boomarked id"));
         }
@@ -125,8 +125,11 @@ exports.Prismic.withContext = function(req, res, callback) {
     }
   });
   if(callback){
-    res.locals.ctx = ctx;
-    ctxPromise.then(callback);
+    ctxPromise.then(function(ctx){
+
+      res.locals.ctx = ctx;
+      callback(ctx);
+    }).catch(function(err){ console.log(err) ;});
   } else {
     return prismicWithCTX(ctxPromise, req, res);
   }
@@ -145,5 +148,3 @@ exports.Prismic.preview = function(req, res) {
     }
   });
 };
-
-
