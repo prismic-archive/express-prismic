@@ -138,7 +138,7 @@ exports.Prismic.withContext = function(req, res, callback) {
 };
 
 exports.Prismic.preview = function(req, res) {
-  prismic.withContext(req,res, function then(ctx) {
+  Prismic.withContext(req,res, function then(ctx) {
     var token = req.query['token'];
     if (token) {
       ctx.api.previewSession(token, ctx.linkResolver, '/', function(err, url) {
