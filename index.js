@@ -81,10 +81,12 @@ function prismicWithCTX(ctxPromise, req, res) {
     // fetch: restrict the results to some fields, separated by commas
     // fetchLinks: include additional fields to links, separated by commas
     'query' : function(q, options, callback) {
+      q = (q && q.length > 0) ? (Array.isArray(q[0]) ? q : [q]) : [];
       ctxPromise.then(function(ctx) {
         res.locals.ctx = ctx;
         var opts = options || {};
-        var form = ctx.api.forms('everything').ref(ctx.ref).query(q);
+        var form = ctx.api.forms('everything').ref(ctx.ref);
+        form.query.apply(form, q);
         for (var key in opts) {
           form.set(key, opts[key]);
         }
