@@ -1,7 +1,7 @@
 {
   "name": "express-prismic",
   "description": "Prismic.io support for Prismic.io",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "Apache-2.0",
   "homepage": "http://github.com/prismicio/express-prismic",
   "repository": {
