@@ -110,17 +110,19 @@ exports.Prismic.withContext = function(req, res, callback) {
           reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
         }
         if (err) {
-          reject(err);
+          console.error("The call couldn't complete with error ", err)
+          reject(err)
+        } else {
+          var ctx = {
+            endpoint: configuration.apiEndpoint,
+            api: Api,
+            ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
+            linkResolver: function(doc) {
+              return configuration.linkResolver(doc, ctx);
+            }
+          };
+          fulfill(ctx);
         }
-        var ctx = {
-          endpoint: configuration.apiEndpoint,
-          api: Api,
-          ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
-          linkResolver: function(doc) {
-            return configuration.linkResolver(doc, ctx);
-          }
-        };
-        fulfill(ctx);
       });
     } catch (ex) {
       return reject(ex);
