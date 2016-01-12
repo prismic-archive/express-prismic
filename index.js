@@ -36,11 +36,11 @@ function prismicWithCTX(ctxPromise, req, res) {
 
     // Return the document corresponding to the requested UID (User-readable ID)
     'getByUID' : function(type, uid, callback) {
-      self.queryFirst(['at','my.'+type+'.uid',uid],callback);
+      return self.queryFirst(['at','my.'+type+'.uid',uid],callback);
     },
     // Return a bookmark from its identifier (string)
     'getBookmark' : function(bookmark, callback) {
-      ctxPromise.then(function(ctx){
+      return ctxPromise.then(function(ctx){
         res.locals.ctx = ctx;
         var id = ctx.api.bookmarks[bookmark];
         if (id) {
@@ -52,15 +52,15 @@ function prismicWithCTX(ctxPromise, req, res) {
     },
     // Return a set of document from their ids
     'getByIDs' : function(ids, callback) {
-      self.query(['any', 'document.id', ids], null, callback);
+      return self.query(['any', 'document.id', ids], null, callback);
     },
     // Return the document corresponding to the requested id
     'getByID' : function(id, callback) {
-      self.queryFirst(['at', 'document.id', id], callback);
+      return self.queryFirst(['at', 'document.id', id], callback);
     },
     // Return the first document matching the query
     'queryFirst' : function(q, callback) {
-      self.query(q, null, function(err, response) {
+      return self.query(q, null, function(err, response) {
         if(err){
           callback(err, null);
         } else if(response && response.results && response.results[0]) {
@@ -77,17 +77,9 @@ function prismicWithCTX(ctxPromise, req, res) {
     // fetchLinks: include additional fields to links, separated by commas
     'query' : function(q, options, callback) {
       q = (q && q.length > 0) ? (Array.isArray(q[0]) ? q : [q]) : [];
-      ctxPromise.then(function(ctx) {
+      return ctxPromise.then(function(ctx) {
         res.locals.ctx = ctx;
-        var opts = options || {};
-        var form = ctx.api.forms('everything').ref(ctx.ref);
-        form.query.apply(form, q);
-        for (var key in opts) {
-          form.set(key, opts[key]);
-        }
-        form.submit(function(err, response) {
-          callback(err, response);
-        });
+        return ctx.api.query(q, options, callback);
       }).catch(function(err) {
         callback(err);
       });
