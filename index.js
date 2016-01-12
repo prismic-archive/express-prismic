@@ -1,9 +1,4 @@
-var Prismic = require('prismic.io').Prismic,
-    Promise = require('promise'),
-    http = require('http'),
-    https = require('https'),
-    url = require('url'),
-    querystring = require('querystring');
+var Prismic = require('prismic.io').Prismic;
 
 var configuration = {};
 
@@ -110,8 +105,8 @@ exports.Prismic.withContext = function(req, res, callback) {
           reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
         }
         if (err) {
-          console.error("The call couldn't complete with error ", err)
-          reject(err)
+          console.error("The call couldn't complete with error ", err);
+          reject(err);
         } else {
           var ctx = {
             endpoint: configuration.apiEndpoint,
@@ -125,11 +120,11 @@ exports.Prismic.withContext = function(req, res, callback) {
         }
       });
     } catch (ex) {
-      return reject(ex);
+      reject(ex);
     }
   });
   if(callback){
-    ctxPromise.then(function(ctx){
+    return ctxPromise.then(function(ctx){
       res.locals.ctx = ctx;
       callback(null, ctx);
     }).catch(function(err){
@@ -144,11 +139,11 @@ exports.Prismic.withContext = function(req, res, callback) {
 exports.Prismic.preview = function(req, res) {
   Prismic.withContext(req,res, function then(err, ctx) {
     if(err) {
-        if (err.status == 404) {
-            res.status(404).send("404 not found");
-        } else {
-            res.status(500).send("Error 500: " + err.message);
-        }
+      if (err.status == 404) {
+        res.status(404).send("404 not found");
+      } else {
+        res.status(500).send("Error 500: " + err.message);
+      }
     }
     var token = req.query['token'];
     if (token) {

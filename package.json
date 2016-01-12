@@ -9,12 +9,16 @@
     "url": "http://github.com/prismicio/express-prismic.git"
   },
   "keywords": [
-    "express", "prismicio", "cms"
+    "express",
+    "prismicio",
+    "cms"
   ],
   "author": "Prismic.io <info@prismic.io>",
   "dependencies": {
-    "prismic.io": "1.3.4",
-    "promise": "^7.0.4"
+    "prismic.io": "1.4.0"
   },
-  "main": "./index.js"
+  "main": "./index.js",
+  "devDependencies": {
+    "eslint": "^1.10.3"
+  }
 }
