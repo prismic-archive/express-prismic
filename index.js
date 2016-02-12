@@ -1,34 +1,30 @@
-var Prismic = require('prismic.io').Prismic;
+var Prismic = require('prismic.io');
 
 var configuration = {};
 
-exports.Prismic = Prismic;
-
-exports.Prismic.ErrorCodes = {
+Prismic.ErrorCodes = {
   NOT_FOUND: 'NOT_FOUND'
 };
 
-exports.Prismic.createError = function(status, message) {
+Prismic.createError = function(status, message) {
   var err = new Error(message);
   err.status = status;
   return err;
 };
 
-exports.Prismic.init = function(config) {
+Prismic.init = function(config) {
   configuration = config;
 };
 
-exports.Prismic.getApiHome = function(accessToken, callback) {
+Prismic.getApiHome = function(accessToken) {
   if (!configuration.apiEndpoint) {
-    callback(new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script"));
+    return Promise.reject(new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script"));
   }
-  Prismic.Api(configuration.apiEndpoint, function(err, res, xhr) {
+  return Prismic.Api(configuration.apiEndpoint, accessToken).catch(function(err) {
     if (err && err.status == "404") {
-      callback(new Error("Invalid apiEndPoint configuration: " + configuration.apiEndpoint));
-    } else {
-      callback(err, res, xhr);
+      (new Error("Invalid apiEndPoint configuration: " + configuration.apiEndpoint));
     }
-  }, accessToken);
+  });
 };
 
 function prismicWithCTX(ctxPromise, req, res) {
@@ -36,7 +32,7 @@ function prismicWithCTX(ctxPromise, req, res) {
 
     // Return the document corresponding to the requested UID (User-readable ID)
     'getByUID' : function(type, uid, callback) {
-      return self.queryFirst(['at','my.'+type+'.uid',uid],callback);
+      return self.queryFirst(['at','my.'+type+'.uid',uid], callback);
     },
     // Return a bookmark from its identifier (string)
     'getBookmark' : function(bookmark, callback) {
@@ -88,34 +84,23 @@ function prismicWithCTX(ctxPromise, req, res) {
   return self;
 }
 
-exports.Prismic.withContext = function(req, res, callback) {
+Prismic.withContext = function(req, res, callback) {
   var accessToken = (req.session && req.session['ACCESS_TOKEN']) || configuration.accessToken;
-  var ctxPromise = new Promise(function (fulfill, reject) {
-    try {
-      exports.Prismic.getApiHome(accessToken, function(err, Api) {
-        if (!configuration.linkResolver) {
-          reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
-        }
-        if (err) {
-          console.error("The call couldn't complete with error ", err);
-          reject(err);
-        } else {
-          var ctx = {
-            endpoint: configuration.apiEndpoint,
-            api: Api,
-            ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || Api.master(),
-            linkResolver: function(doc) {
-              return configuration.linkResolver(doc, ctx);
-            }
-          };
-          fulfill(ctx);
-        }
-      });
-    } catch (ex) {
-      reject(ex);
+  var ctxPromise = Prismic.getApiHome(accessToken).then(function (api) {
+    if (!configuration.linkResolver) {
+      return Promise.reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
     }
+    var ctx = {
+      endpoint: configuration.apiEndpoint,
+      api: api,
+      ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || api.master(),
+      linkResolver: function(doc) {
+        return configuration.linkResolver(doc, ctx);
+      }
+    };
+    return ctx;
   });
-  if(callback){
+  if (callback) {
     return ctxPromise.then(function(ctx){
       res.locals.ctx = ctx;
       callback(null, ctx);
@@ -128,7 +113,7 @@ exports.Prismic.withContext = function(req, res, callback) {
   }
 };
 
-exports.Prismic.preview = function(req, res) {
+Prismic.preview = function(req, res) {
   Prismic.withContext(req,res, function then(err, ctx) {
     if(err) {
       if (err.status == 404) {
@@ -148,3 +133,8 @@ exports.Prismic.preview = function(req, res) {
     }
   });
 };
+
+Prismic.Prismic = Prismic; // Backward compatibility
+
+module.exports = Prismic;
+
