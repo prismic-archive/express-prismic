@@ -75,6 +75,10 @@ function prismicWithCTX(ctxPromise, req, res) {
       q = (q && q.length > 0) ? (Array.isArray(q[0]) ? q : [q]) : [];
       return ctxPromise.then(function(ctx) {
         res.locals.ctx = ctx;
+        var opts = options || {};
+        if (!opts.ref) {
+          opts.ref = ctx.ref;
+        }
         return ctx.api.query(q, options, callback);
       }).catch(function(err) {
         callback(err);
@@ -114,7 +118,7 @@ Prismic.withContext = function(req, res, callback) {
 };
 
 Prismic.preview = function(req, res) {
-  Prismic.withContext(req,res, function then(err, ctx) {
+  Prismic.withContext(req, res, function then(err, ctx) {
     if(err) {
       if (err.status == 404) {
         res.status(404).send("404 not found");
