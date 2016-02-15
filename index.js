@@ -21,8 +21,11 @@ Prismic.getApiHome = function(accessToken) {
     return Promise.reject(new Error("Missing apiEndpoint in configuration: make sure to call init() at the beginning of your script"));
   }
   return Prismic.Api(configuration.apiEndpoint, accessToken).catch(function(err) {
-    if (err && err.status == "404") {
-      (new Error("Invalid apiEndPoint configuration: " + configuration.apiEndpoint));
+    switch (err.status) {
+    case 404:
+      throw new Error("Invalid apiEndPoint configuration: " + configuration.apiEndpoint);
+    default:
+      throw err;
     }
   });
 };
