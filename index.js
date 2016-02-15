@@ -57,7 +57,7 @@ function prismicWithCTX(ctxPromise, req, res) {
     // Return the first document matching the query
     'queryFirst' : function(q, callback) {
       return self.query(q, null, function(err, response) {
-        if(err){
+        if(err) {
           callback(err, null);
         } else if(response && response.results && response.results[0]) {
           callback(null, response.results[0]);
@@ -72,7 +72,6 @@ function prismicWithCTX(ctxPromise, req, res) {
     // fetch: restrict the results to some fields, separated by commas
     // fetchLinks: include additional fields to links, separated by commas
     'query' : function(q, options, callback) {
-      q = (q && q.length > 0) ? (Array.isArray(q[0]) ? q : [q]) : [];
       return ctxPromise.then(function(ctx) {
         res.locals.ctx = ctx;
         var opts = options || {};
