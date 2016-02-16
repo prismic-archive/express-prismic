@@ -9,11 +9,15 @@ module.exports = {
     "block-scoped-var": 2,
     "no-alert": 2,
     "no-console": 0,
+    "handle-callback-err": 2,
     "array-bracket-spacing": [2, "never"],
     "block-spacing": [2, "always"]
   },
   "env": {
     "node": true
+  },
+  "globals": {
+    "Promise": true
   },
   "extends": "eslint:recommended"
 };

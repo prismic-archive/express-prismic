@@ -131,8 +131,12 @@ Prismic.preview = function(req, res) {
     var token = req.query['token'];
     if (token) {
       ctx.api.previewSession(token, ctx.linkResolver, '/', function(err, url) {
-        res.cookie(Prismic.previewCookie, token, { maxAge: 30 * 60 * 1000, path: '/', httpOnly: false });
-        res.redirect(301, url);
+        if (err) {
+          res.status(500).send("Error 500 in preview: " + err.message);
+        } else {
+          res.cookie(Prismic.previewCookie, token, { maxAge: 30 * 60 * 1000, path: '/', httpOnly: false });
+          res.redirect(301, url);
+        }
       });
     } else {
       res.send(400, "Missing token from querystring");
