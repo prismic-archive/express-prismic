@@ -65,7 +65,7 @@ function prismicWithCTX(ctxPromise, req, res) {
         } else if(response && response.results && response.results[0]) {
           callback(null, response.results[0]);
         } else {
-          callback(new Error("empty response"), null);
+          callback(Prismic.createError(404, "No document matching query"), null);
         }
       });
     },
