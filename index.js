@@ -1,4 +1,5 @@
 var Prismic = require('prismic.io');
+var Cookies = require('cookies');
 
 var configuration = {};
 
@@ -81,7 +82,7 @@ function prismicWithCTX(ctxPromise, req, res) {
         if (!opts.ref) {
           opts.ref = ctx.ref;
         }
-        return ctx.api.query(q, options, callback);
+        return ctx.api.query(q, opts, callback);
       }).catch(function(err) {
         callback(err);
       });
@@ -96,10 +97,11 @@ Prismic.withContext = function(req, res, callback) {
     if (!configuration.linkResolver) {
       return Promise.reject(new Error("Missing linkResolver in configuration: make sure to call init() at the beginning of your script"));
     }
+    var cookies = new Cookies(req, res);
     var ctx = {
       endpoint: configuration.apiEndpoint,
       api: api,
-      ref: req.cookies[Prismic.experimentCookie] || req.cookies[Prismic.previewCookie] || api.master(),
+      ref: cookies.get(Prismic.experimentCookie) || cookies.get(Prismic.previewCookie) || api.master(),
       linkResolver: function(doc) {
         return configuration.linkResolver(doc, ctx);
       }
@@ -134,7 +136,8 @@ Prismic.preview = function(req, res) {
         if (err) {
           res.status(500).send("Error 500 in preview: " + err.message);
         } else {
-          res.cookie(Prismic.previewCookie, token, { maxAge: 30 * 60 * 1000, path: '/', httpOnly: false });
+          var cookies = new Cookies(req, res);
+          cookies.set(Prismic.previewCookie, token, { maxAge: 30 * 60 * 1000, path: '/', httpOnly: false });
           res.redirect(301, url);
         }
       });
